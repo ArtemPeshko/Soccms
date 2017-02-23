@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security" xmlns:beans="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <security:http auto-config="true" use-expressions="true">
+
+        <security:intercept-url pattern="/loginpage*" access="permitAll()"/>
+        <security:intercept-url pattern="/registration*" access="permitAll()"/>
+        <security:intercept-url pattern="/webjars/**" access="permitAll()"/>
+        <security:intercept-url pattern="/resources/**" access="permitAll()"/>
+        <security:intercept-url pattern="/friends/**" access="isAuthenticated()"/>
+        <security:intercept-url pattern="/posts/**" access="isAuthenticated()"/>
+        <security:intercept-url pattern="/photos/**" access="isAuthenticated()"/>
+        <security:intercept-url pattern="/messages/**" access="isAuthenticated()"/>
+        <security:intercept-url pattern="/profile/**" access="isAuthenticated()"/>
+        <security:intercept-url pattern="/error/**" access="permitAll()"/>
+        <security:intercept-url pattern="/images/**" access="permitAll()"/>
+
+        <security:intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')"/>
+
+        <security:form-login
+                login-processing-url="/j_spring_security_check"
+                login-page="/loginpage"
+                default-target-url="/welcomePage"
+                always-use-default-target="true"
+                authentication-failure-url="/loginpage?error"
+                username-parameter="username"
+                password-parameter="password"/>
+
+
+        <security:logout logout-url="/j_spring_security_logout"
+                         logout-success-url="/loginpage?logout"
+                         invalidate-session="true"/>
+        <security:access-denied-handler error-page="/403"/>
+
+        <!-- enables csrf protection -->
+        <security:csrf disabled="true"/>
+
+        <!-- enables remember me -->
+        <security:remember-me
+                token-validity-seconds="1209600"
+                remember-me-parameter="remember-me"
+                data-source-ref="dataSource"/>
+
+    </security:http>
+
+    <!--Allows to AuthenticationProviders to be defined-->
+    <security:authentication-manager>
+        <security:authentication-provider>
+            <!--  password encoding using the default BCryptPasswordEncoder -->
+            <security:password-encoder hash="bcrypt"/>
+            <!-- obtaining users from DB -->
+            <security:jdbc-user-service data-source-ref="dataSource"
+                                        users-by-username-query=
+                                                "SELECT username, password, enabled FROM user WHERE username=?"
+                                        authorities-by-username-query=
+                                                "SELECT username, role FROM user, user_role WHERE user_role.id = user.roleID AND username =?"/>
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+    <bean id="bcryptEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+
+</beans>

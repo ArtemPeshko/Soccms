@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <context:component-scan base-package="by.peshko.soccms.controller"/>
+    <context:component-scan base-package="by.peshko.soccms.service"/>
+    <context:component-scan base-package="by.peshko.soccms.dao"/>
+    <context:component-scan base-package="by.peshko.soccms.model"/>
+    <context:component-scan base-package="by.peshko.soccms.validator"/>
+    <context:component-scan base-package="by.peshko.soccms.component.facade"/>
+    <context:component-scan base-package="by.peshko.soccms.dto.converter"/>
+    <context:component-scan base-package="by.peshko.soccms.component"/>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/pages/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <mvc:annotation-driven/>
+
+    <!--resource mapping-->
+    <!--Configures a handler for serving static resources.  Allows resources to be served out of any path-->
+    <mvc:resources mapping="/webjars/**" location="/webjars/"/>
+    <mvc:resources mapping="/resources/**" location="/resources/"/>
+    <mvc:resources mapping="/images/**" location="file:${user.home}/"/>
+
+    <!-- _______________________________________ Image upload  ____________________________________________ -->
+
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- one of the properties available - the maximum file size in bytes -->
+        <property name="maxUploadSize" value="10000000"/>
+    </bean>
+
+    <!--____________________________________Hibernate section_____________________________________________-->
+
+    <import resource="classpath:dataBase.xml"/>
+
+    <!--___________________________________Spring Security config_________________________________________-->
+
+    <import resource="classpath:spring-security.xml"/>
+
+    <!--___________________________________Localization section _________________________________________ -->
+
+    <!--MessageSource. Loads messages from resource files -->
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>classpath:logmesagges</value>
+                <value>classpath:language</value>
+            </list>
+        </property>
+        <property name="defaultEncoding" value="UTF-8"/>
+    </bean>
+
+    <!-- _______________________________________ Localization  ____________________________________________ -->
+
+    <!-- Interceptor that allows for changing the current locale on every request, via a configurable request parameter
+    (default parameter name: "locale").-->
+    <!-- It intercepts any changes in locale. These changes will be saved in cookie files -->
+        <bean id="localeChangeInterceptor" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+        <property name="paramName" value="lang"/>
+    </bean>
+
+    <!-- CookieLocaleResolver class for storage locale changes in cookies. -->
+       <bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver">
+        <property name="defaultLocale" value="ru"/>
+    </bean>
+
+    <!-- implementation that uses a cookie sent back to the user
+    * in case of a custom setting, with a fallback to the specified default locale-->
+    <bean id="handlerMapping" class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping">
+        <property name="interceptors" ref="localeChangeInterceptor"/>
+    </bean>
+
+    <!--Localization -->
+    <mvc:interceptors>
+
+        <bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+            <property name="paramName" value="lang"/>
+        </bean>
+    </mvc:interceptors>
+
+    <!-- _______________________________________ Converters  ____________________________________________ -->
+
+    <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <list>
+                <bean class="by.peshko.soccms.dto.converter.UserDTOConverter"/>
+                <bean class="by.peshko.soccms.dto.converter.UserDTOReverseConverter"/>
+                <bean class="by.peshko.soccms.dto.converter.ProfileDTOReverseConverter"/>
+                <bean class="by.peshko.soccms.dto.converter.ProfileDTOConverter"/>
+                <bean class="by.peshko.soccms.dto.converter.FriendDTOConverter"/>
+                <bean class="by.peshko.soccms.dto.converter.FriendDTOReverseConverter"/>
+                <bean class="by.peshko.soccms.dto.converter.MessageDTOConverter"/>
+                <bean class="by.peshko.soccms.dto.converter.MessageDTOReverseConverter"/>
+                <bean class="by.peshko.soccms.dto.converter.PhotoDTOConverter"/>
+                <bean class="by.peshko.soccms.dto.converter.PhotoDTOReverseConverter"/>
+                <bean class="by.peshko.soccms.dto.converter.PostDTOConverter"/>
+                <bean class="by.peshko.soccms.dto.converter.PostDTOReverseConverter"/>
+            </list>
+        </property>
+    </bean>
+
+
+</beans>
